@@ -9,7 +9,7 @@ export default () => {
   // background script state
   // *****************************
   const {
-    presale: {
+    hatch: {
       contributionToken: { symbol, decimals },
     },
     contributions,

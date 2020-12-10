@@ -1,5 +1,5 @@
 import { Order } from './order'
-import { Presale } from './presale'
+import { Hatch } from './hatch'
 import { Polling } from './polling'
 
-export { Order, Presale, Polling }
+export { Order, Hatch, Polling }

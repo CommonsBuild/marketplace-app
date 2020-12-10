@@ -9,8 +9,8 @@ import BigNumber from 'bignumber.js'
 export const ready = state => {
   const synced = !state?.isSyncing
   const hasCollaterals = state?.collaterals.size > 0
-  const presaleStateIsKnown = state?.presale?.state
-  return synced && hasCollaterals && presaleStateIsKnown
+  const hatchStateIsKnown = state?.hatch?.state
+  return synced && hasCollaterals && hatchStateIsKnown
 }
 
 
@@ -37,16 +37,16 @@ export const computeValues = values => ({
 })
 
 /**
- * Compute some data related to the presale
- * @param {Object} presale - background script presale data
+ * Compute some data related to the hatch
+ * @param {Object} hatch - background script hatch data
  * @param {BigNumber} PPM - part per million
- * @returns {Object} transformed presale
+ * @returns {Object} transformed hatch
  */
-export const computePresale = (presale, PPM) => ({
-  ...presale,
-  exchangeRate: new BigNumber(presale.exchangeRate).div(PPM),
-  goal: new BigNumber(presale.goal),
-  totalRaised: new BigNumber(presale.totalRaised),
+export const computeHatch = (hatch, PPM) => ({
+  ...hatch,
+  exchangeRate: new BigNumber(hatch.exchangeRate).div(PPM),
+  goal: new BigNumber(hatch.goal),
+  totalRaised: new BigNumber(hatch.totalRaised),
 })
 
 /**

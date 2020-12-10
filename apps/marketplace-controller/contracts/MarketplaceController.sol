@@ -7,7 +7,7 @@ import "@aragon/os/contracts/common/SafeERC20.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/token/ERC20.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
-import "@1hive/apps-marketplace-shared-interfaces/contracts/IPresale.sol";
+import "@1hive/apps-marketplace-shared-interfaces/contracts/IHatch.sol";
 import "@1hive/apps-marketplace-bancor-market-maker/contracts/BancorMarketMaker.sol";
 import "@1hive/apps-marketplace-shared-interfaces/contracts/IMarketplaceController.sol";
 
@@ -24,7 +24,7 @@ contract MarketplaceController is EtherTokenConstant, IsContract, ApproveAndCall
     bytes32 public constant ADD_COLLATERAL_TOKEN_ROLE                  = keccak256("ADD_COLLATERAL_TOKEN_ROLE");
     bytes32 public constant REMOVE_COLLATERAL_TOKEN_ROLE               = keccak256("REMOVE_COLLATERAL_TOKEN_ROLE");
     bytes32 public constant UPDATE_COLLATERAL_TOKEN_ROLE               = keccak256("UPDATE_COLLATERAL_TOKEN_ROLE");
-    bytes32 public constant OPEN_PRESALE_ROLE                          = keccak256("OPEN_PRESALE_ROLE");
+    bytes32 public constant OPEN_HATCH_ROLE                          = keccak256("OPEN_HATCH_ROLE");
     bytes32 public constant OPEN_TRADING_ROLE                          = keccak256("OPEN_TRADING_ROLE");
     bytes32 public constant CONTRIBUTE_ROLE                            = keccak256("CONTRIBUTE_ROLE");
     bytes32 public constant MAKE_BUY_ORDER_ROLE                        = keccak256("MAKE_BUY_ORDER_ROLE");
@@ -36,7 +36,7 @@ contract MarketplaceController is EtherTokenConstant, IsContract, ApproveAndCall
     bytes32 public constant ADD_COLLATERAL_TOKEN_ROLE                  = 0x217b79cb2bc7760defc88529853ef81ab33ae5bb315408ce9f5af09c8776662d;
     bytes32 public constant REMOVE_COLLATERAL_TOKEN_ROLE               = 0x2044e56de223845e4be7d0a6f4e9a29b635547f16413a6d1327c58d9db438ee2;
     bytes32 public constant UPDATE_COLLATERAL_TOKEN_ROLE               = 0xe0565c2c43e0d841e206bb36a37f12f22584b4652ccee6f9e0c071b697a2e13d;
-    bytes32 public constant OPEN_PRESALE_ROLE                          = 0xf323aa41eef4850a8ae7ebd047d4c89f01ce49c781f3308be67303db9cdd48c2;
+    bytes32 public constant OPEN_HATCH_ROLE                          = 0xf323aa41eef4850a8ae7ebd047d4c89f01ce49c781f3308be67303db9cdd48c2;
     bytes32 public constant OPEN_TRADING_ROLE                          = 0x26ce034204208c0bbca4c8a793d17b99e546009b1dd31d3c1ef761f66372caf6;
     bytes32 public constant CONTRIBUTE_ROLE                            = 0x9ccaca4edf2127f20c425fdd86af1ba178b9e5bee280cd70d88ac5f6874c4f07;
     bytes32 public constant MAKE_BUY_ORDER_ROLE                        = 0x0dfea6908176d96adbee7026b3fe9fbdaccfc17bc443ddf14734fd27c3136179;
@@ -46,7 +46,7 @@ contract MarketplaceController is EtherTokenConstant, IsContract, ApproveAndCall
     string private constant ERROR_NO_PERMISSION = "MARKETPLACE_NO_PERMISSION";
     string private constant ERROR_TRANSFER_FAILED = "MARKETPLACE_TRANSFER_FAILED";
 
-    IPresale public presale;
+    IHatch public hatch;
     BancorMarketMaker public marketMaker;
     Vault public reserve;
 
@@ -54,25 +54,25 @@ contract MarketplaceController is EtherTokenConstant, IsContract, ApproveAndCall
 
     /**
      * @notice Initialize Aragon Fundraising controller
-     * @param _presale     The address of the presale contract
+     * @param _hatch     The address of the hatch contract
      * @param _marketMaker The address of the market maker contract
      * @param _reserve     The address of the reserve [pool] contract
     */
     function initialize(
-        IPresale _presale,
+        IHatch _hatch,
         BancorMarketMaker _marketMaker,
         Vault _reserve
     )
         external
         onlyInit
     {
-        require(isContract(_presale),           ERROR_CONTRACT_IS_EOA);
+        require(isContract(_hatch),           ERROR_CONTRACT_IS_EOA);
         require(isContract(_marketMaker),       ERROR_CONTRACT_IS_EOA);
         require(isContract(_reserve),           ERROR_CONTRACT_IS_EOA);
 
         initialized();
 
-        presale = _presale;
+        hatch = _hatch;
         marketMaker = _marketMaker;
         reserve = _reserve;
     }
@@ -104,37 +104,37 @@ contract MarketplaceController is EtherTokenConstant, IsContract, ApproveAndCall
         marketMaker.updateFees(_buyFeePct, _sellFeePct);
     }
 
-    /* presale related functions */
+    /* hatch related functions */
 
     /**
-     * @notice Open presale
+     * @notice Open hatch
     */
-    function openPresale() external auth(OPEN_PRESALE_ROLE) {
-        presale.open();
+    function openHatch() external auth(OPEN_HATCH_ROLE) {
+        hatch.open();
     }
 
     /**
-     * @notice Close presale and open trading
+     * @notice Close hatch and open trading
     */
-    function closePresale() external isInitialized {
-        presale.close();
+    function closeHatch() external isInitialized {
+        hatch.close();
     }
 
     /**
-     * @notice Contribute to the presale up to `@tokenAmount(self.contributionToken(): address, _value)`
+     * @notice Contribute to the hatch up to `@tokenAmount(self.contributionToken(): address, _value)`
      * @param _value The amount of contribution token to be spent
     */
     function contribute(uint256 _value) external payable authP(CONTRIBUTE_ROLE, arr(msg.sender, _value)) {
-        presale.contribute.value(msg.value)(msg.sender, _value);
+        hatch.contribute.value(msg.value)(msg.sender, _value);
     }
 
     /**
-     * @notice Refund `_contributor`'s presale contribution #`_vestedPurchaseId`
-     * @param _contributor      The address of the contributor whose presale contribution is to be refunded
+     * @notice Refund `_contributor`'s hatch contribution #`_vestedPurchaseId`
+     * @param _contributor      The address of the contributor whose hatch contribution is to be refunded
      * @param _vestedPurchaseId The id of the contribution to be refunded
     */
     function refund(address _contributor, uint256 _vestedPurchaseId) external isInitialized {
-        presale.refund(_contributor, _vestedPurchaseId);
+        hatch.refund(_contributor, _vestedPurchaseId);
     }
 
     /* market making related functions */
@@ -259,7 +259,7 @@ contract MarketplaceController is EtherTokenConstant, IsContract, ApproveAndCall
     }
 
     function contributionToken() public view isInitialized returns (address) {
-        return presale.contributionToken();
+        return hatch.contributionToken();
     }
 
     function balanceOf(address _who, address _token) public view isInitialized returns (uint256) {

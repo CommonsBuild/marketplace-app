@@ -2,7 +2,7 @@ import {
   ready,
   computeConstants,
   computeValues,
-  computePresale,
+  computeHatch,
   computeCollaterals,
   computeBondedToken,
   computeOrders,
@@ -17,10 +17,10 @@ const appStateReducer = state => {
   // don't reduce not yet populated state
   const isReady = ready(state)
   if (isReady) {
-    const { constants, values, presale, contributions, collaterals, bondedToken, orders } = state
+    const { constants, values, hatch, contributions, collaterals, bondedToken, orders } = state
     const computedConstants = computeConstants(constants)
     const computedValues = computeValues(values)
-    const computedPresale = computePresale(presale, computedConstants.PPM)
+    const computedHatch = computeHatch(hatch, computedConstants.PPM)
     const computedCollaterals = computeCollaterals(collaterals)
     const computedBondedToken = computeBondedToken(bondedToken, computedCollaterals)
     const computedOrders = computeOrders(orders)
@@ -29,8 +29,8 @@ const appStateReducer = state => {
       isReady,
       constants: computedConstants,
       values: computedValues,
-      presale: computedPresale,
-      // we don't compute BigNumbers on contributions, since it's only necessary if the presale state is refund
+      hatch: computedHatch,
+      // we don't compute BigNumbers on contributions, since it's only necessary if the hatch state is refund
       // we will compute the BigNumbers on the newRefund panel
       contributions,
       collaterals: computedCollaterals,

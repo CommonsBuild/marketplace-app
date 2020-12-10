@@ -37,12 +37,12 @@
     "test:all:gas": "lerna run --scope=@1hive/apps-marketplace-* --concurrency=1 --stream test:gas",
     "test:controller": "lerna run --scope=@1hive/apps-marketplace-controller --stream test",
     "test:bancor-market-maker": "lerna run --scope=@1hive/apps-marketplace-bancor-market-maker --stream test",
-    "test:presale": "lerna run --scope=@1hive/apps-marketplace-presale --stream test",
+    "test:hatch": "lerna run --scope=@1hive/apps-marketplace-hatch --stream test",
     "coverage": "npm run coverage:all",
     "coverage:all": "lerna run --scope=@1hive/apps-marketplace-* --concurrency=1 --stream coverage",
     "coverage:controller": "lerna run --scope=@1hive/apps-marketplace-controller --stream coverage",
     "coverage:bancor-market-maker": "lerna run --scope=@1hive/apps-marketplace-bancor-market-maker --stream coverage",
-    "coverage:presale": "lerna run --scope=@1hive/apps-marketplace-presale --stream coverage",
+    "coverage:hatch": "lerna run --scope=@1hive/apps-marketplace-hatch --stream coverage",
     "publish": "lerna run --scope=@1hive/apps-marketplace-* --concurrency=1 --stream publish"
   },
   "devDependencies": {

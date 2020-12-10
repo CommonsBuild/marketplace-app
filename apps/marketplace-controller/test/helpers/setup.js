@@ -1,7 +1,7 @@
 const TokenManager = artifacts.require('TokenManager')
 const MiniMeToken = artifacts.require('MiniMeToken')
 const Controller = artifacts.require('MarketplaceController')
-const Presale = artifacts.require('PresaleMock')
+const Hatch = artifacts.require('HatchMock')
 const MarketMaker = artifacts.require('BancorMarketMaker')
 const Formula = artifacts.require('BancorFormula')
 const Agent = artifacts.require('Agent')
@@ -12,9 +12,9 @@ const {
   ZERO_ADDRESS,
   ETH,
   INITIAL_COLLATERAL_BALANCE,
-  PRESALE_GOAL,
-  PRESALE_PERIOD,
-  PRESALE_EXCHANGE_RATE,
+  HATCH_GOAL,
+  HATCH_PERIOD,
+  HATCH_EXCHANGE_RATE,
   VESTING_CLIFF_PERIOD,
   VESTING_COMPLETE_PERIOD,
   PERCENT_SUPPLY_OFFERED,
@@ -34,7 +34,7 @@ const setup = {
   ids: {
     controller: hash('marketplace-controller.aragonpm.eth'),
     tokenManager: hash('token-manager.aragonpm.eth'),
-    presale: hash('presale.aragonpm.eth'),
+    hatch: hash('hatch.aragonpm.eth'),
     marketMaker: hash('bancor-market-maker.aragonpm.eth'),
     agent: hash('agent.aragonpm.eth'),
     vault: hash('vault.aragonpm.eth'),
@@ -45,7 +45,7 @@ const setup = {
 
       ctx.base.controller = await Controller.new()
       ctx.base.tokenManager = await TokenManager.new()
-      ctx.base.presale = await Presale.new()
+      ctx.base.hatch = await Hatch.new()
       ctx.base.marketMaker = await MarketMaker.new()
       ctx.base.reserve = await Agent.new()
       ctx.base.vault = await Vault.new()
@@ -91,8 +91,8 @@ const setup = {
     tokenManager: async (ctx, root) => {
       ctx.tokenManager = await TokenManager.at(await installNewApp(ctx.dao, setup.ids.tokenManager, ctx.base.tokenManager.address, root))
     },
-    presale: async (ctx, root) => {
-      ctx.presale = await Presale.at(await installNewApp(ctx.dao, setup.ids.presale, ctx.base.presale.address, root))
+    hatch: async (ctx, root) => {
+      ctx.hatch = await Hatch.at(await installNewApp(ctx.dao, setup.ids.hatch, ctx.base.hatch.address, root))
     },
     marketMaker: async (ctx, root) => {
       ctx.marketMaker = await MarketMaker.at(await installNewApp(ctx.dao, setup.ids.marketMaker, ctx.base.marketMaker.address, root))
@@ -107,7 +107,7 @@ const setup = {
     all: async (ctx, root) => {
       await setup.install.controller(ctx, root)
       await setup.install.tokenManager(ctx, root)
-      await setup.install.presale(ctx, root)
+      await setup.install.hatch(ctx, root)
       await setup.install.marketMaker(ctx, root)
       await setup.install.reserve(ctx, root)
       await setup.install.vault(ctx, root)
@@ -115,7 +115,7 @@ const setup = {
   },
   initialize: {
     controller: async (ctx, root) => {
-      await ctx.controller.initialize(ctx.presale.address, ctx.marketMaker.address, ctx.reserve.address, {
+      await ctx.controller.initialize(ctx.hatch.address, ctx.marketMaker.address, ctx.reserve.address, {
         from: root,
       })
     },
@@ -123,16 +123,16 @@ const setup = {
       await ctx.token.changeController(ctx.tokenManager.address, { from: root })
       await ctx.tokenManager.initialize(ctx.token.address, true, 0, { from: root })
     },
-    presale: async (ctx, root) => {
-      await ctx.presale.initialize(
+    hatch: async (ctx, root) => {
+      await ctx.hatch.initialize(
         ctx.controller.address,
         ctx.tokenManager.address,
         ctx.reserve.address,
         ctx.vault.address,
         ctx.collaterals.dai.address,
-        PRESALE_GOAL,
-        PRESALE_PERIOD,
-        PRESALE_EXCHANGE_RATE,
+        HATCH_GOAL,
+        HATCH_PERIOD,
+        HATCH_EXCHANGE_RATE,
         VESTING_CLIFF_PERIOD,
         VESTING_COMPLETE_PERIOD,
         PERCENT_SUPPLY_OFFERED,
@@ -163,7 +163,7 @@ const setup = {
       await setup.initialize.tokenManager(ctx, root)
       await setup.initialize.vault(ctx, root)
       await setup.initialize.reserve(ctx, root)
-      await setup.initialize.presale(ctx, root)
+      await setup.initialize.hatch(ctx, root)
       await setup.initialize.marketMaker(ctx, root)
       await setup.initialize.controller(ctx, root)
     },
@@ -177,7 +177,7 @@ const setup = {
       ctx.roles.controller.ADD_COLLATERAL_TOKEN_ROLE = await ctx.base.controller.ADD_COLLATERAL_TOKEN_ROLE()
       ctx.roles.controller.REMOVE_COLLATERAL_TOKEN_ROLE = await ctx.base.controller.REMOVE_COLLATERAL_TOKEN_ROLE()
       ctx.roles.controller.UPDATE_COLLATERAL_TOKEN_ROLE = await ctx.base.controller.UPDATE_COLLATERAL_TOKEN_ROLE()
-      ctx.roles.controller.OPEN_PRESALE_ROLE = await ctx.base.controller.OPEN_PRESALE_ROLE()
+      ctx.roles.controller.OPEN_HATCH_ROLE = await ctx.base.controller.OPEN_HATCH_ROLE()
       ctx.roles.controller.OPEN_TRADING_ROLE = await ctx.base.controller.OPEN_TRADING_ROLE()
       ctx.roles.controller.CONTRIBUTE_ROLE = await ctx.base.controller.CONTRIBUTE_ROLE()
       ctx.roles.controller.MAKE_BUY_ORDER_ROLE = await ctx.base.controller.MAKE_BUY_ORDER_ROLE()
@@ -189,8 +189,8 @@ const setup = {
       await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.ADD_COLLATERAL_TOKEN_ROLE, root, { from: root })
       await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.REMOVE_COLLATERAL_TOKEN_ROLE, root, { from: root })
       await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.UPDATE_COLLATERAL_TOKEN_ROLE, root, { from: root })
-      await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.OPEN_PRESALE_ROLE, root, { from: root })
-      await ctx.acl.createPermission(ctx.presale.address, ctx.controller.address, ctx.roles.controller.OPEN_TRADING_ROLE, root, { from: root })
+      await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.OPEN_HATCH_ROLE, root, { from: root })
+      await ctx.acl.createPermission(ctx.hatch.address, ctx.controller.address, ctx.roles.controller.OPEN_TRADING_ROLE, root, { from: root })
       await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.CONTRIBUTE_ROLE, root, { from: root })
       await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.MAKE_BUY_ORDER_ROLE, root, { from: root })
       await ctx.acl.createPermission(user, ctx.controller.address, ctx.roles.controller.MAKE_SELL_ORDER_ROLE, root, { from: root })
@@ -209,18 +209,18 @@ const setup = {
 
       await ctx.acl.createPermission(ctx.marketMaker.address, ctx.tokenManager.address, ctx.roles.tokenManager.MINT_ROLE, root, { from: root })
       await ctx.acl.createPermission(ctx.marketMaker.address, ctx.tokenManager.address, ctx.roles.tokenManager.BURN_ROLE, root, { from: root })
-      await ctx.acl.grantPermission(ctx.presale.address, ctx.tokenManager.address, ctx.roles.tokenManager.BURN_ROLE, { from: root })
-      await ctx.acl.createPermission(ctx.presale.address, ctx.tokenManager.address, ctx.roles.tokenManager.ISSUE_ROLE, root, { from: root })
-      await ctx.acl.createPermission(ctx.presale.address, ctx.tokenManager.address, ctx.roles.tokenManager.ASSIGN_ROLE, root, { from: root })
-      await ctx.acl.createPermission(ctx.presale.address, ctx.tokenManager.address, ctx.roles.tokenManager.REVOKE_VESTINGS_ROLE, root, { from: root })
+      await ctx.acl.grantPermission(ctx.hatch.address, ctx.tokenManager.address, ctx.roles.tokenManager.BURN_ROLE, { from: root })
+      await ctx.acl.createPermission(ctx.hatch.address, ctx.tokenManager.address, ctx.roles.tokenManager.ISSUE_ROLE, root, { from: root })
+      await ctx.acl.createPermission(ctx.hatch.address, ctx.tokenManager.address, ctx.roles.tokenManager.ASSIGN_ROLE, root, { from: root })
+      await ctx.acl.createPermission(ctx.hatch.address, ctx.tokenManager.address, ctx.roles.tokenManager.REVOKE_VESTINGS_ROLE, root, { from: root })
     },
-    presale: async (ctx, root) => {
-      ctx.roles.presale = ctx.roles.presale || {}
-      ctx.roles.presale.OPEN_ROLE = await ctx.base.presale.OPEN_ROLE()
-      ctx.roles.presale.CONTRIBUTE_ROLE = await ctx.base.presale.CONTRIBUTE_ROLE()
+    hatch: async (ctx, root) => {
+      ctx.roles.hatch = ctx.roles.hatch || {}
+      ctx.roles.hatch.OPEN_ROLE = await ctx.base.hatch.OPEN_ROLE()
+      ctx.roles.hatch.CONTRIBUTE_ROLE = await ctx.base.hatch.CONTRIBUTE_ROLE()
 
-      await ctx.acl.createPermission(ctx.controller.address, ctx.presale.address, ctx.roles.presale.OPEN_ROLE, root, { from: root })
-      await ctx.acl.createPermission(ctx.controller.address, ctx.presale.address, ctx.roles.presale.CONTRIBUTE_ROLE, root, { from: root })
+      await ctx.acl.createPermission(ctx.controller.address, ctx.hatch.address, ctx.roles.hatch.OPEN_ROLE, root, { from: root })
+      await ctx.acl.createPermission(ctx.controller.address, ctx.hatch.address, ctx.roles.hatch.CONTRIBUTE_ROLE, root, { from: root })
     },
     marketMaker: async (ctx, root) => {
       ctx.roles.marketMaker = ctx.roles.marketMaker || {}
@@ -239,16 +239,16 @@ const setup = {
     all: async (ctx, root, user) => {
       await setup.setPermissions.controller(ctx, root, user)
       await setup.setPermissions.tokenManager(ctx, root)
-      await setup.setPermissions.presale(ctx, root)
+      await setup.setPermissions.hatch(ctx, root)
       await setup.setPermissions.marketMaker(ctx, root)
       await setup.setPermissions.reserve(ctx, root)
       await setup.setPermissions.vault(ctx, root)
     },
   },
   setCollaterals: async (ctx, root, user) => {
-    await ctx.collaterals.dai.approve(ctx.presale.address, INITIAL_COLLATERAL_BALANCE, { from: user })
+    await ctx.collaterals.dai.approve(ctx.hatch.address, INITIAL_COLLATERAL_BALANCE, { from: user })
     await ctx.collaterals.dai.approve(ctx.marketMaker.address, INITIAL_COLLATERAL_BALANCE, { from: user })
-    await ctx.collaterals.ant.approve(ctx.presale.address, INITIAL_COLLATERAL_BALANCE, { from: user })
+    await ctx.collaterals.ant.approve(ctx.hatch.address, INITIAL_COLLATERAL_BALANCE, { from: user })
     await ctx.collaterals.ant.approve(ctx.marketMaker.address, INITIAL_COLLATERAL_BALANCE, { from: user })
 
     await ctx.controller.addCollateralToken(ETH, VIRTUAL_SUPPLIES[0], VIRTUAL_BALANCES[0], RESERVE_RATIOS[0], {

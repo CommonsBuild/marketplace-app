@@ -6,7 +6,7 @@ cache:
     - apps/marketplace-controller/node_modules
     - apps/bancor-formula/node_modules
     - apps/bancor-market-maker/node_modules
-    - apps/presale/node_modules
+    - apps/hatch/node_modules
     - shared/interfaces/node_modules
     - shared/test-helpers/node_modules
 notifications:
@@ -25,14 +25,14 @@ jobs:
       name: 'Marketplace Controller'
     - script: npm run test:bancor-market-maker
       name: 'Bancor Market Maker'
-    - script: npm run test:presale
-      name: 'Presale'
+    - script: npm run test:hatch
+      name: 'Hatch'
     - stage: coverage
       script: npm run coverage:controller
       name: 'Marketplace Controller'
     - script: npm run coverage:bancor-market-maker
       name: 'Bancor Market Maker'
-    - script: npm run coverage:presale
-      name: 'Presale'
+    - script: npm run coverage:hatch
+      name: 'Hatch'
 after_success:
   - ./node_modules/.bin/lcov-result-merger 'apps/*/coverage/lcov.info' | ./node_modules/.bin/coveralls

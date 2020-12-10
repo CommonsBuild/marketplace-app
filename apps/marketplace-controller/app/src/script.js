@@ -4,13 +4,13 @@ import { first } from 'rxjs/operators'
 import cloneDeep from 'lodash/cloneDeep'
 import poolAbi from './abi/Pool.json'
 import marketMakerAbi from './abi/BancorMarketMaker.json'
-import presaleAbi from './abi/Presale.json'
+import hatchAbi from './abi/Hatch.json'
 import miniMeTokenAbi from './abi/MiniMeToken.json'
 import tokenDecimalsAbi from './abi/token-decimals.json'
 import tokenNameAbi from './abi/token-name.json'
 import tokenSymbolAbi from './abi/token-symbol.json'
 import retryEvery from './utils/retryEvery'
-import { Order, Presale } from './constants'
+import { Order, Hatch } from './constants'
 
 const DEBUG = true
 const MINI_ME_TOKEN_VERSION = "MMT_0.1"
@@ -29,12 +29,12 @@ const tokenSymbols = new Map() // External contract -> symbol
 const app = new Aragon()
 
 // get the token address to initialize ourselves
-const externals = zip(app.call('reserve'), app.call('marketMaker'), app.call('presale'))
+const externals = zip(app.call('reserve'), app.call('marketMaker'), app.call('hatch'))
 retryEvery(() => {
   externals
     .toPromise()
-    .then(([poolAddress, marketMakerAddress, presaleAddress]) => {
-      initialize(poolAddress, marketMakerAddress, presaleAddress)
+    .then(([poolAddress, marketMakerAddress, hatchAddress]) => {
+      initialize(poolAddress, marketMakerAddress, hatchAddress)
     })
     .catch(err => {
       console.error('Could not start background script execution due to the contract not loading external contracts:', err)
@@ -42,11 +42,11 @@ retryEvery(() => {
     })
 })
 
-const initialize = async (poolAddress, marketMakerAddress, presaleAddress) => {
+const initialize = async (poolAddress, marketMakerAddress, hatchAddress) => {
   // get external smart contracts to listen to their events and interact with them
   const marketMakerContract = app.external(marketMakerAddress, marketMakerAbi)
   const poolContract = app.external(poolAddress, poolAbi)
-  const presaleContract = app.external(presaleAddress, presaleAbi)
+  const hatchContract = app.external(hatchAddress, hatchAbi)
 
   // preload bonded token contract
   const bondedTokenAddress = await marketMakerContract.token().toPromise()
@@ -72,9 +72,9 @@ const initialize = async (poolAddress, marketMakerAddress, presaleAddress) => {
       address: poolAddress,
       contract: poolContract,
     },
-    presale: {
-      address: presaleAddress,
-      contract: presaleContract,
+    hatch: {
+      address: hatchAddress,
+      contract: hatchContract,
     },
     bondedToken: {
       address: bondedTokenAddress,
@@ -127,7 +127,7 @@ const initialize = async (poolAddress, marketMakerAddress, presaleAddress) => {
         case 'Contribute':
           return addContribution(nextState, returnValues, settings, blockNumber)
         case 'Close':
-          return closePresale(nextState, settings)
+          return closeHatch(nextState, settings)
         case 'Refund':
           return removeContribution(nextState, returnValues)
         default:
@@ -136,7 +136,7 @@ const initialize = async (poolAddress, marketMakerAddress, presaleAddress) => {
     },
     {
       init: initState(settings),
-      externals: [marketMakerContract, poolContract, presaleContract].map(c => ({ contract: c })),
+      externals: [marketMakerContract, poolContract, hatchContract].map(c => ({ contract: c })),
     }
   )
 }
@@ -152,7 +152,7 @@ const initState = settings => async cachedState => {
     addresses: {
       marketMaker: settings.marketMaker.address,
       pool: settings.pool.address,
-      presale: settings.presale.address,
+      hatch: settings.hatch.address,
       formula: settings.formula.address,
     },
     network: settings.network,
@@ -170,8 +170,8 @@ const initState = settings => async cachedState => {
  * @param {Object} settings - the settings needed to access external contracts data
  * @returns {Object} the current store's state augmented with the smart contracts data
  */
-const loadContractsData = async (state, { bondedToken, marketMaker, presale, network }) => {
-  // loads data related to the bonded token, market maker and presale contracts
+const loadContractsData = async (state, { bondedToken, marketMaker, hatch, network }) => {
+  // loads data related to the bonded token, market maker and hatch contracts
   const [
     symbol,
     name,
@@ -181,7 +181,7 @@ const loadContractsData = async (state, { bondedToken, marketMaker, presale, net
     buyFeePct,
     sellFeePct,
     PCT_BASE,
-    presaleState,
+    hatchState,
     openDate,
     period,
     vestingCliffPeriod,
@@ -202,17 +202,17 @@ const loadContractsData = async (state, { bondedToken, marketMaker, presale, net
     marketMaker.contract.buyFeePct().toPromise(),
     marketMaker.contract.sellFeePct().toPromise(),
     marketMaker.contract.PCT_BASE().toPromise(),
-    // presale data
-    presale.contract.state().toPromise(),
-    presale.contract.openDate().toPromise(),
-    presale.contract.period().toPromise(),
-    presale.contract.vestingCliffPeriod().toPromise(),
-    presale.contract.vestingCompletePeriod().toPromise(),
-    presale.contract.goal().toPromise(),
-    presale.contract.totalRaised().toPromise(),
-    presale.contract.exchangeRate().toPromise(),
-    presale.contract.contributionToken().toPromise(),
-    presale.contract.token().toPromise(),
+    // hatch data
+    hatch.contract.state().toPromise(),
+    hatch.contract.openDate().toPromise(),
+    hatch.contract.period().toPromise(),
+    hatch.contract.vestingCliffPeriod().toPromise(),
+    hatch.contract.vestingCompletePeriod().toPromise(),
+    hatch.contract.goal().toPromise(),
+    hatch.contract.totalRaised().toPromise(),
+    hatch.contract.exchangeRate().toPromise(),
+    hatch.contract.contributionToken().toPromise(),
+    hatch.contract.token().toPromise(),
   ])
 
   // find the corresponding contract in the in memory map or get the external
@@ -220,7 +220,7 @@ const loadContractsData = async (state, { bondedToken, marketMaker, presale, net
   tokenContracts.set(contributionToken, contributionTokenContract)
   const tokenContract = tokenContracts.has(token) ? tokenContracts.get(token) : app.external(token, tokenAbi)
   tokenContracts.set(token, tokenContract)
-  // load presale contributionToken data
+  // load hatch contributionToken data
   const [contributionTokenSymbol, contributionTokenName, contributionTokenDecimals, tokenSymbol, tokenName, tokenDecimals] = await Promise.all([
     loadTokenSymbol(contributionTokenContract, contributionToken, { network }),
     loadTokenName(contributionTokenContract, contributionToken, { network }),
@@ -241,8 +241,8 @@ const loadContractsData = async (state, { bondedToken, marketMaker, presale, net
       buyFeePct,
       sellFeePct,
     },
-    presale: {
-      state: Object.values(Presale.state)[presaleState],
+    hatch: {
+      state: Object.values(Hatch.state)[hatchState],
       contributionToken: {
         address: contributionToken,
         symbol: contributionTokenSymbol,
@@ -403,27 +403,27 @@ const updateFees = (state, { buyFeePct, sellFeePct }) => {
   }
 }
 
-const setOpenDate = async (state, { date }, { presale }) => {
+const setOpenDate = async (state, { date }, { hatch }) => {
   const openDate = parseInt(date, 10) * 1000 // in ms
-  // update the state of the presale
-  const presaleState = await presale.contract.state().toPromise()
+  // update the state of the hatch
+  const hatchState = await hatch.contract.state().toPromise()
   return {
     ...state,
-    presale: {
-      ...state.presale,
-      state: Object.values(Presale.state)[presaleState],
+    hatch: {
+      ...state.hatch,
+      state: Object.values(Hatch.state)[hatchState],
       openDate,
     },
   }
 }
-const addContribution = async (state, { contributor, value, amount, vestedPurchaseId }, { presale }, blockNumber) => {
+const addContribution = async (state, { contributor, value, amount, vestedPurchaseId }, { hatch }, blockNumber) => {
   // get the user contributions
   const contributions = cloneDeep(state.contributions)
   const userContributions = contributions.get(contributor) || []
-  // we call `presale.contract.totalRaised` instead of directly to the claculation here
+  // we call `hatch.contract.totalRaised` instead of directly to the claculation here
   // because we can't make BigNumber calculations from the background script
   // and pass it to the fronted
-  const [totalRaised, timestamp] = await Promise.all([presale.contract.totalRaised().toPromise(), loadTimestamp(blockNumber)])
+  const [totalRaised, timestamp] = await Promise.all([hatch.contract.totalRaised().toPromise(), loadTimestamp(blockNumber)])
   const newContribution = {
     value,
     amount,
@@ -439,21 +439,21 @@ const addContribution = async (state, { contributor, value, amount, vestedPurcha
   contributions.set(contributor, userContributions)
   return {
     ...state,
-    presale: {
-      ...state.presale,
+    hatch: {
+      ...state.hatch,
       totalRaised,
     },
     contributions,
   }
 }
 
-const closePresale = async (state, settings) => {
+const closeHatch = async (state, settings) => {
   const bondedToken = await updateBondedToken(state.bondedToken, settings)
   return {
     ...state,
-    presale: {
-      ...state.presale,
-      state: Presale.state.CLOSED,
+    hatch: {
+      ...state.hatch,
+      state: Hatch.state.CLOSED,
     },
     bondedToken,
   }

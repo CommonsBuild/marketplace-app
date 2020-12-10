@@ -34,7 +34,7 @@
   ],
   "dependencies": {
     "@1hive/apps-marketplace-bancor-market-maker": "^1.0.0",
-    "@1hive/apps-marketplace-presale": "^1.0.0",
+    "@1hive/apps-marketplace-hatch": "^1.0.0",
     "@1hive/apps-marketplace-shared-interfaces": "^1.0.0",
     "@aragon/apps-agent": "^2.0.0-rc.1",
     "@aragon/os": "4.4.0"

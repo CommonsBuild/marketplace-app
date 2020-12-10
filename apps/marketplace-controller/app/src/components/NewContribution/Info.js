@@ -8,7 +8,7 @@ const Information = () => {
         margin-top: ${4 * GU}px;
       `}
     >
-      <Info.Action>If the presale campaign fails, you can get refunded. If the presale campaign succeeds, your shares will be vested.</Info.Action>
+      <Info.Action>If the hatch campaign fails, you can get refunded. If the hatch campaign succeeds, your shares will be vested.</Info.Action>
     </div>
   )
 }
