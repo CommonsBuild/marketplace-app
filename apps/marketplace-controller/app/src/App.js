@@ -4,10 +4,10 @@ import { Main, SyncIndicator } from '@aragon/ui'
 import appStateReducer from './appStateReducer'
 import { useInterval } from './hooks/use-interval'
 import MainView from './views/MainView'
-import PresaleView from './views/PresaleView'
+import HatchView from './views/HatchView'
 import CollateralError from './screens/CollateralError'
-import { Presale, Polling } from './constants'
-import PresaleAbi from './abi/Presale.json'
+import { Hatch, Polling } from './constants'
+import HatchAbi from './abi/Hatch.json'
 
 import './assets/global.css'
 
@@ -15,7 +15,7 @@ const App = () => {
   // *****************************
   // background script state
   // *****************************
-  const { isReady, addresses, presale } = useAppState()
+  const { isReady, addresses, hatch } = useAppState()
 
   // *****************************
   // aragon api
@@ -25,43 +25,43 @@ const App = () => {
   // *****************************
   // internal state
   // *****************************
-  const [isPresale, setIsPresale] = useState(null)
-  const [presaleContract, setPresaleContract] = useState(null)
+  const [isHatch, setIsHatch] = useState(null)
+  const [hatchContract, setHatchContract] = useState(null)
 
-  // check when the app is ready (it will mean presale state and addresses too)
-  // if so get the presale state and contract
+  // check when the app is ready (it will mean hatch state and addresses too)
+  // if so get the hatch state and contract
   useEffect(() => {
     if (isReady) {
-      setIsPresale(presale.state !== Presale.state.CLOSED)
-      setPresaleContract(api.external(addresses.presale, PresaleAbi))
+      setIsHatch(hatch.state !== Hatch.state.CLOSED)
+      setHatchContract(api.external(addresses.hatch, HatchAbi))
     }
   }, [isReady])
 
-  // check if we are on presale when the app is mounted
+  // check if we are on hatch when the app is mounted
   useEffect(() => {
-    const checkIsPresale = async () => {
-      const newPresaleState = Object.values(Presale.state)[await presaleContract.state().toPromise()]
-      setIsPresale(newPresaleState !== Presale.state.CLOSED)
+    const checkIsHatch = async () => {
+      const newHatchState = Object.values(Hatch.state)[await hatchContract.state().toPromise()]
+      setIsHatch(newHatchState !== Hatch.state.CLOSED)
     }
-    // once presale ended, no need to check anymore
-    if (isReady && !isPresale) checkIsPresale()
+    // once hatch ended, no need to check anymore
+    if (isReady && !isHatch) checkIsHatch()
   }, [])
 
-  // polls if we are on presale
+  // polls if we are on hatch
   useInterval(async () => {
-    // once presale ended, no need to check anymore
-    if (isReady && !isPresale) {
-      const newPresaleState = Object.values(Presale.state)[await presaleContract.state().toPromise()]
-      const newIsPresale = newPresaleState !== Presale.state.CLOSED
-      if (newIsPresale !== isPresale) setIsPresale(newIsPresale)
+    // once hatch ended, no need to check anymore
+    if (isReady && !isHatch) {
+      const newHatchState = Object.values(Hatch.state)[await hatchContract.state().toPromise()]
+      const newIsHatch = newHatchState !== Hatch.state.CLOSED
+      if (newIsHatch !== isHatch) setIsHatch(newIsHatch)
     }
   }, Polling.DURATION)
 
   return (
     <Main theme={appearance} assetsUrl="./aragon-ui">
-      <SyncIndicator visible={!isReady || isPresale === null} />
-      {isPresale && isReady && <PresaleView />}
-      {!isPresale && isReady && <MainView />}
+      <SyncIndicator visible={!isReady || isHatch === null} />
+      {isHatch && isReady && <HatchView />}
+      {!isHatch && isReady && <MainView />}
     </Main>
   )
 }

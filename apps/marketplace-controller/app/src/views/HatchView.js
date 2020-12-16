@@ -4,21 +4,21 @@ import { useAppState, useApi, useConnectedAccount, useNetwork } from '@aragon/ap
 import { Header, Button } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import { useInterval } from '../hooks/use-interval'
-import { Presale as PresaleConstants, Polling } from '../constants'
-import Presale from '../screens/Presale'
+import { Hatch as HatchConstants, Polling } from '../constants'
+import Hatch from '../screens/Hatch'
 import NewContribution from '../components/NewContribution'
 import NewRefund from '../components/NewRefund'
 import { IdentityProvider } from '../components/IdentityManager'
-import { PresaleViewContext } from '../context'
-import PresaleAbi from '../abi/Presale.json'
+import { HatchViewContext } from '../context'
+import HatchAbi from '../abi/Hatch.json'
 
 export default () => {
   // *****************************
   // background script state
   // *****************************
   const {
-    addresses: { presale: presaleAddress },
-    presale: {
+    addresses: { hatch: hatchAddress },
+    hatch: {
       state,
       openDate,
       contributionToken: { address },
@@ -29,28 +29,28 @@ export default () => {
   // aragon api
   // *****************************
   const api = useApi()
-  const presale = api.external(presaleAddress, PresaleAbi)
+  const hatch = api.external(hatchAddress, HatchAbi)
   const connectedUser = useConnectedAccount()
   const { type: networkType } = useNetwork()
 
   // *****************************
   // internal state, also shared through context
   // *****************************
-  const [presalePanel, setPresalePanel] = useState(false)
+  const [hatchPanel, setHatchPanel] = useState(false)
   const [refundPanel, setRefundPanel] = useState(false)
 
   // *****************************
   // context state
   // *****************************
   const [polledOpenDate, setPolledOpenDate] = useState(openDate)
-  const [polledPresaleState, setPolledPresaleState] = useState(state)
+  const [polledHatchState, setPolledHatchState] = useState(state)
   const [userPrimaryCollateralBalance, setUserPrimaryCollateralBalance] = useState(new BigNumber(0))
   const context = {
     openDate: polledOpenDate,
-    state: polledPresaleState,
+    state: polledHatchState,
     userPrimaryCollateralBalance: userPrimaryCollateralBalance,
-    presalePanel,
-    setPresalePanel,
+    hatchPanel,
+    setHatchPanel,
     refundPanel,
     setRefundPanel,
   }
@@ -79,40 +79,40 @@ export default () => {
   useInterval(async () => {
     let newOpenDate = polledOpenDate
     let newUserPrimaryCollateralBalance = userPrimaryCollateralBalance
-    let newPresaleState = polledPresaleState
+    let newHatchState = polledHatchState
     // only poll if the openDate is not set yet
-    if (openDate === 0) newOpenDate = parseInt(await presale.openDate().toPromise(), 10)
+    if (openDate === 0) newOpenDate = parseInt(await hatch.openDate().toPromise(), 10)
     // only poll if there is a connected user
     if (connectedUser) newUserPrimaryCollateralBalance = new BigNumber(await api.call('balanceOf', connectedUser, address).toPromise())
-    // poll presale state
-    newPresaleState = Object.values(PresaleConstants.state)[await presale.state().toPromise()]
+    // poll hatch state
+    newHatchState = Object.values(HatchConstants.state)[await hatch.state().toPromise()]
     // TODO: keep an eye on React 17
     batchedUpdates(() => {
       // only update if values are different
       if (newOpenDate !== polledOpenDate) setPolledOpenDate(newOpenDate)
       if (!newUserPrimaryCollateralBalance.eq(userPrimaryCollateralBalance)) setUserPrimaryCollateralBalance(newUserPrimaryCollateralBalance)
-      if (newPresaleState !== polledPresaleState) setPolledPresaleState(newPresaleState)
+      if (newHatchState !== polledHatchState) setPolledHatchState(newHatchState)
     })
   }, Polling.DURATION)
 
   return (
-    <PresaleViewContext.Provider value={context}>
+    <HatchViewContext.Provider value={context}>
       <IdentityProvider onResolve={handleResolveLocalIdentity} onShowLocalIdentityModal={handleShowLocalIdentityModal}>
         <Header
-          primary="Marketplace Presale"
+          primary="Marketplace Hatch"
           secondary={
             <Button
-              disabled={polledPresaleState !== PresaleConstants.state.FUNDING}
+              disabled={polledHatchState !== HatchConstants.state.FUNDING}
               mode="strong"
-              label="Buy presale shares"
-              onClick={() => setPresalePanel(true)}
+              label="Buy hatch shares"
+              onClick={() => setHatchPanel(true)}
             />
           }
         />
-        <Presale />
+        <Hatch />
         <NewContribution />
         <NewRefund />
       </IdentityProvider>
-    </PresaleViewContext.Provider>
+    </HatchViewContext.Provider>
   )
 }

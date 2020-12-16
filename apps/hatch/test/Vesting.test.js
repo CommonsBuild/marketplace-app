@@ -1,12 +1,12 @@
 const { VESTING_CLIFF_PERIOD, VESTING_COMPLETE_PERIOD } = require('@1hive/apps-marketplace-shared-test-helpers/constants')
-const { prepareDefaultSetup, defaultDeployParams, initializePresale } = require('./common/deploy')
+const { prepareDefaultSetup, defaultDeployParams, initializeHatch } = require('./common/deploy')
 const { contributionToProjectTokens, now } = require('./common/utils')
 const { assertBn } = require('@aragon/contract-helpers-test/src/asserts')
 const { bn } = require('@aragon/contract-helpers-test/src/numbers')
 
 const BUYER_BALANCE = 20000
 
-contract('Presale, vesting functionality', ([anyone, appManager, buyer]) => {
+contract('Hatch, vesting functionality', ([anyone, appManager, buyer]) => {
   const itVestsTokensCorrectly = startDate => {
     describe('When a purchase produces vested tokens', () => {
       let vestedAmount, vestingStartDate, vestingCliffDate, vestingCompleteDate, vestingRevokable
@@ -14,18 +14,18 @@ contract('Presale, vesting functionality', ([anyone, appManager, buyer]) => {
       before(async () => {
         await prepareDefaultSetup(this, appManager)
         const _now = now()
-        await initializePresale(this, { ...defaultDeployParams(this, appManager), startDate })
+        await initializeHatch(this, { ...defaultDeployParams(this, appManager), startDate })
 
         await this.contributionToken.generateTokens(buyer, BUYER_BALANCE)
-        await this.contributionToken.approve(this.presale.address, BUYER_BALANCE, { from: buyer })
+        await this.contributionToken.approve(this.hatch.address, BUYER_BALANCE, { from: buyer })
 
         if (startDate == 0) {
           startDate = _now
-          await this.presale.open({ from: appManager })
+          await this.hatch.open({ from: appManager })
         }
-        this.presale.mockSetTimestamp(startDate + 1)
+        this.hatch.mockSetTimestamp(startDate + 1)
 
-        await this.presale.contribute(buyer, BUYER_BALANCE, { from: buyer })
+        await this.hatch.contribute(buyer, BUYER_BALANCE, { from: buyer })
 
         const vestingData = await this.tokenManager.getVesting(buyer, 0)
         vestedAmount = vestingData[0]

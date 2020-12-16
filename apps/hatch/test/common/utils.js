@@ -1,4 +1,4 @@
-const { PRESALE_EXCHANGE_RATE, PPM } = require('@1hive/apps-marketplace-shared-test-helpers/constants')
+const { HATCH_EXCHANGE_RATE, PPM } = require('@1hive/apps-marketplace-shared-test-helpers/constants')
 const { bn } = require('@aragon/contract-helpers-test/src/numbers')
 
 const utils = {
@@ -6,7 +6,7 @@ const utils = {
 
   contributionToProjectTokens: value => 
     value
-      .mul(bn(PRESALE_EXCHANGE_RATE))
+      .mul(bn(HATCH_EXCHANGE_RATE))
       .div(bn(PPM))
   ,
 
@@ -15,7 +15,7 @@ const utils = {
   },
 
   tokenExchangeRate: () => {
-    return bn(PRESALE_EXCHANGE_RATE)
+    return bn(HATCH_EXCHANGE_RATE)
   },
 
   sendTransaction: data => {

@@ -193,9 +193,9 @@ All values coming from the event, except `ppm` which can be found on the backgro
         "formula": address,
         "tap": address,
         "reserve": address,
-        "presale": address,
+        "hatch": address,
     },
-    "presale": {
+    "hatch": {
         "state": String, // "PENDING", "FUNDING", "REFUNDING", "GOAL_REACHED" or "CLOSED"
         "contributionToken": {
             "address": String,
@@ -218,8 +218,8 @@ All values coming from the event, except `ppm` which can be found on the backgro
         "totalRaised": BigNumber // "polled from the frontend"
     },
     "contributions": Map("contributor": String, [{
-        "value": String, // not computed as BigNumber, only when presale state is REFUNDING
-        "amount": String, // not computed as BigNumber, only when presale state is REFUNDING
+        "value": String, // not computed as BigNumber, only when hatch state is REFUNDING
+        "amount": String, // not computed as BigNumber, only when hatch state is REFUNDING
         "vestedPurchaseId": String,
         "timestamp": Number
     }]),

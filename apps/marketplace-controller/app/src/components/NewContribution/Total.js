@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react'
 import { Text } from '@aragon/ui'
 import { useAppState } from '@aragon/api-react'
 import styled from 'styled-components'
-import { PresaleViewContext } from '../../context'
+import { HatchViewContext } from '../../context'
 import { formatBigNumber, toDecimals } from '../../utils/bn-utils'
 
 export default ({ value, onError }) => {
@@ -10,7 +10,7 @@ export default ({ value, onError }) => {
   // background script state
   // *****************************
   const {
-    presale: {
+    hatch: {
       contributionToken: { symbol: contributionSymbol, decimals: contributionDecimals },
       token: { symbol, decimals },
       exchangeRate,
@@ -20,7 +20,7 @@ export default ({ value, onError }) => {
   // *****************************
   // context state
   // *****************************
-  const { userPrimaryCollateralBalance } = useContext(PresaleViewContext)
+  const { userPrimaryCollateralBalance } = useContext(HatchViewContext)
 
   // *****************************
   // internal state

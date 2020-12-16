@@ -2,7 +2,7 @@ import React, { useEffect, useContext, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useApi, useAppState, useConnectedAccount } from '@aragon/api-react'
 import { Button, Text, TextInput, theme, unselectable, GU } from '@aragon/ui'
-import { PresaleViewContext } from '../../context'
+import { HatchViewContext } from '../../context'
 import Total from './Total'
 import Info from './Info'
 import ValidationError from '../ValidationError'
@@ -13,9 +13,9 @@ export default () => {
   // background script state
   // *****************************
   const {
-    addresses: { presale },
+    addresses: { hatch },
     collaterals,
-    presale: {
+    hatch: {
       contributionToken: { symbol: contributionSymbol, decimals: contributionDecimals },
     },
   } = useAppState()
@@ -29,7 +29,7 @@ export default () => {
   // *****************************
   // context state
   // *****************************
-  const { presalePanel, setPresalePanel, userPrimaryCollateralBalance } = useContext(PresaleViewContext)
+  const { hatchPanel, setHatchPanel, userPrimaryCollateralBalance } = useContext(HatchViewContext)
   // *****************************
   // internal state
   // *****************************
@@ -43,7 +43,7 @@ export default () => {
   // *****************************
   // handle reset when opening
   useEffect(() => {
-    if (presalePanel) {
+    if (hatchPanel) {
       // reset to default values
       setValue('')
       setValid(false)
@@ -53,7 +53,7 @@ export default () => {
       // be skipped by the browser.
       valueInput && setTimeout(() => valueInput.current.focus(), 100)
     }
-  }, [presalePanel])
+  }, [hatchPanel])
 
   // *****************************
   // handlers
@@ -70,13 +70,13 @@ export default () => {
   const handleSubmit = event => {
     event.preventDefault()
     if (account) {
-      const intent = { token: { address: collaterals.primaryCollateral.address, value: toDecimals(value, contributionDecimals).toFixed(), spender: presale } }
+      const intent = { token: { address: collaterals.primaryCollateral.address, value: toDecimals(value, contributionDecimals).toFixed(), spender: hatch } }
       api
         .contribute(toDecimals(value, contributionDecimals).toFixed(), intent)
         .toPromise()
         .catch(console.error)
     }
-    setPresalePanel(false)
+    setHatchPanel(false)
   }
 
   return (
@@ -99,7 +99,7 @@ export default () => {
       <Total value={value} onError={validate} />
       <ButtonWrapper>
         <Button mode="strong" type="submit" disabled={!valid || !account} wide>
-          Buy presale shares
+          Buy hatch shares
         </Button>
       </ButtonWrapper>
       {errorMessage && <ValidationError messages={[errorMessage]} />}

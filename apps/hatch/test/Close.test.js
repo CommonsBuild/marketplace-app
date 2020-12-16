@@ -1,65 +1,65 @@
 const {
-  PRESALE_MAX_GOAL,
-  PRESALE_STATE,
+  HATCH_MAX_GOAL,
+  HATCH_STATE,
   PERCENT_FUNDING_FOR_BENEFICIARY,
   PERCENT_SUPPLY_OFFERED,
   PPM,
 } = require('@1hive/apps-marketplace-shared-test-helpers/constants')
-const { prepareDefaultSetup, defaultDeployParams, initializePresale } = require('./common/deploy')
+const { prepareDefaultSetup, defaultDeployParams, initializeHatch } = require('./common/deploy')
 const { getEvent, now } = require('./common/utils')
 const { assertRevert } = require('@aragon/contract-helpers-test/src/asserts')
 const { bn } = require('@aragon/contract-helpers-test/src/numbers')
 
 const assertExternalEvent = require('@1hive/apps-marketplace-shared-test-helpers/assertExternalEvent')
 
-const BUYER_BALANCE = 2 * PRESALE_MAX_GOAL
+const BUYER_BALANCE = 2 * HATCH_MAX_GOAL
 
-contract('Presale, close() functionality', ([anyone, appManager, buyer1]) => {
+contract('Hatch, close() functionality', ([anyone, appManager, buyer1]) => {
   const itAllowsTheSaleToBeClosed = startDate => {
     describe('When enough purchases have been made to close the sale', () => {
       before(async () => {
         await prepareDefaultSetup(this, appManager)
-        await initializePresale(this, { ...defaultDeployParams(this, appManager), startDate })
+        await initializeHatch(this, { ...defaultDeployParams(this, appManager), startDate })
 
         await this.contributionToken.generateTokens(buyer1, BUYER_BALANCE)
-        await this.contributionToken.approve(this.presale.address, BUYER_BALANCE, { from: buyer1 })
+        await this.contributionToken.approve(this.hatch.address, BUYER_BALANCE, { from: buyer1 })
 
         if (startDate == 0) {
           startDate = now()
-          await this.presale.open({ from: appManager })
+          await this.hatch.open({ from: appManager })
         }
-        this.presale.mockSetTimestamp(startDate + 1)
+        this.hatch.mockSetTimestamp(startDate + 1)
 
         // Make a single purchase that reaches the max funding goal
-        await this.presale.contribute(buyer1, PRESALE_MAX_GOAL)
+        await this.hatch.contribute(buyer1, HATCH_MAX_GOAL)
       })
 
       it('Sale state is still GoalReached', async () => {
-        assert.equal((await this.presale.state()).toNumber(), PRESALE_STATE.GOAL_REACHED)
+        assert.equal((await this.hatch.state()).toNumber(), HATCH_STATE.GOAL_REACHED)
       })
 
       it('Sale state is GoalReached', async () => {
-        assert.equal((await this.presale.state()).toNumber(), PRESALE_STATE.GOAL_REACHED)
+        assert.equal((await this.hatch.state()).toNumber(), HATCH_STATE.GOAL_REACHED)
       })
 
       describe('When the sale is closed', () => {
         let closeReceipt
 
         before(async () => {
-          closeReceipt = await this.presale.close()
+          closeReceipt = await this.hatch.close()
         })
 
         it('Sale state is Closed', async () => {
-          assert.equal((await this.presale.state()).toNumber(), PRESALE_STATE.CLOSED)
+          assert.equal((await this.hatch.state()).toNumber(), HATCH_STATE.CLOSED)
         })
 
         it('Raised funds are transferred to the fundraising reserve and the beneficiary address', async () => {
-          assert.equal((await this.contributionToken.balanceOf(this.presale.address)).toNumber(), 0)
+          assert.equal((await this.contributionToken.balanceOf(this.hatch.address)).toNumber(), 0)
 
-          const totalRaised = (await this.presale.totalRaised()).toNumber()
+          const totalRaised = (await this.hatch.totalRaised()).toNumber()
           const tokensForBeneficiary = Math.floor((totalRaised * PERCENT_FUNDING_FOR_BENEFICIARY) / PPM)
           const tokensForReserve = totalRaised - tokensForBeneficiary
-          const reserve = await this.presale.reserve()
+          const reserve = await this.hatch.reserve()
           assert.equal((await this.contributionToken.balanceOf(appManager)).toNumber(), tokensForBeneficiary)
           assert.equal((await this.contributionToken.balanceOf(reserve)).toNumber(), tokensForReserve)
         })
@@ -76,7 +76,7 @@ contract('Presale, close() functionality', ([anyone, appManager, buyer1]) => {
         })
 
         it('Sale cannot be closed again', async () => {
-          await assertRevert(this.presale.close(), 'PRESALE_INVALID_STATE')
+          await assertRevert(this.hatch.close(), 'HATCH_INVALID_STATE')
         })
 
         it('Emitted a Close event', async () => {

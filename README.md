@@ -9,9 +9,9 @@ Marketplace is an open source suite of apps. None of the people or institutions 
 
 Marketplace is a suite of Aragon apps providing Aragon organizations continuous fundraising capabilities. It implements the following features.
 
-### Presale
+### Hatch
 
-This module allows organizations to set a presale target that must be reached during a given period of time for the continous fundraising campaign to actually start.
+This module allows organizations to set a hatch target that must be reached during a given period of time for the continous fundraising campaign to actually start.
 
 ### Automatic Market Making
 
@@ -27,7 +27,7 @@ This module provides market liquidity to the marketplacee by automatically match
 | -------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
 | [`@1hive/apps-marketplace-bancor-formula`](/apps/bancor-formula)                           |         | `BancorFormula` computation contract                                                                          |
 | [`@1hive/apps-marketplace-bancor-market-maker`](/apps/bancor-market-maker) |         | Automated market-maker batching orders filled through the `BancorFormula`                                     |
-| [`@1hive/apps-marketplace-presale`](/apps/presale)                                                 |         | Initial fundraising to hatch the bonding curve                                             |
+| [`@1hive/apps-marketplace-hatch`](/apps/hatch)                                                 |         | Initial fundraising to hatch the bonding curve                                             |
 | [`@1hive/apps-marketplace-controller`](/apps/marketplace-controller)                   |         | `API` contract providing a single entry-point to interact consistently with all marketplace-related contracts |
 
 

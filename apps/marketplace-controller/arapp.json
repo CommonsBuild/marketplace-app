@@ -53,8 +53,8 @@
       "params": []
     },
     {
-      "name": "Open presale",
-      "id": "OPEN_PRESALE_ROLE",
+      "name": "Open hatch",
+      "id": "OPEN_HATCH_ROLE",
       "params": []
     },
     {
@@ -63,7 +63,7 @@
       "params": []
     },
     {
-      "name": "Contribute to presale",
+      "name": "Contribute to hatch",
       "id": "CONTRIBUTE_ROLE",
       "params": [
         "Contributor",

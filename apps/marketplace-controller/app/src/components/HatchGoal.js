@@ -2,8 +2,8 @@ import React, { useContext } from 'react'
 import { useAppState, useApi, useConnectedAccount } from '@aragon/api-react'
 import { Box, Button, useTheme, GU, color } from '@aragon/ui'
 import CircleGraph from '../components/CircleGraph'
-import { PresaleViewContext } from '../context'
-import { Presale } from '../constants'
+import { HatchViewContext } from '../context'
+import { Hatch } from '../constants'
 import { formatBigNumber } from '../utils/bn-utils'
 
 export default () => {
@@ -11,7 +11,7 @@ export default () => {
   // background script state
   // *****************************
   const {
-    presale: {
+    hatch: {
       contributionToken: { symbol, decimals },
       goal,
       totalRaised,
@@ -28,21 +28,21 @@ export default () => {
   // *****************************
   // context state
   // *****************************
-  const { state, setRefundPanel } = useContext(PresaleViewContext)
+  const { state, setRefundPanel } = useContext(HatchViewContext)
 
   // *****************************
   // misc
   // *****************************
   const circleColor = {
-    [Presale.state.PENDING]: color('#ecedf1'),
-    [Presale.state.FUNDING]: theme.accent,
-    [Presale.state.GOAL_REACHED]: theme.positive,
-    [Presale.state.REFUNDING]: theme.negative,
-    [Presale.state.CLOSED]: color('#21c1e7'),
+    [Hatch.state.PENDING]: color('#ecedf1'),
+    [Hatch.state.FUNDING]: theme.accent,
+    [Hatch.state.GOAL_REACHED]: theme.positive,
+    [Hatch.state.REFUNDING]: theme.negative,
+    [Hatch.state.CLOSED]: color('#21c1e7'),
   }
 
   /**
-   * Calls the `presale.close` smart contarct function on button click
+   * Calls the `hatch.close` smart contarct function on button click
    * @param {Object} event - the event to prevent
    * @returns {void}
    */
@@ -50,14 +50,14 @@ export default () => {
     event.preventDefault()
     if (account) {
       api
-        .closePresale()
+        .closeHatch()
         .toPromise()
         .catch(console.error)
     }
   }
 
   return (
-    <Box heading="Presale Goal">
+    <Box heading="Hatch Goal">
       <div className="circle">
         <CircleGraph value={totalRaised.div(goal).toNumber()} size={20.5 * GU} width={6} color={circleColor[state]} />
         <p
@@ -87,7 +87,7 @@ export default () => {
           </span>{' '}
           {symbol}
         </p>
-        {state === Presale.state.GOAL_REACHED && (
+        {state === Hatch.state.GOAL_REACHED && (
           <>
             <p
               css={`
@@ -96,7 +96,7 @@ export default () => {
                 color: ${theme.surfaceContent};
               `}
             >
-              <strong>Presale goal completed! 🎉</strong>
+              <strong>Hatch goal completed! 🎉</strong>
             </p>
             <Button
               wide
@@ -112,26 +112,26 @@ export default () => {
             </Button>
           </>
         )}
-        {state === Presale.state.REFUNDING && (
+        {state === Hatch.state.REFUNDING && (
           <>
             <p
               css={`
                 margin-top: ${2 * GU}px;
               `}
             >
-              Unfortunately, the goal set for this presale has not been reached.
+              Unfortunately, the goal set for this hatch has not been reached.
             </p>
             <Button
               wide
               mode="strong"
-              label="Refund Presale Tokens"
+              label="Refund Hatch Tokens"
               css={`
                 margin-top: ${2 * GU}px;
                 width: 100%;
               `}
               onClick={() => setRefundPanel(true)}
             >
-              Refund presale shares
+              Refund hatch shares
             </Button>
           </>
         )}

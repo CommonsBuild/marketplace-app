@@ -10,16 +10,16 @@ const MiniMeToken = artifacts.require('@aragon/minime/contracts/MiniMeToken')
 const TokenManager = artifacts.require('TokenManager.sol')
 const Vault = artifacts.require('Vault.sol')
 const FundraisingController = artifacts.require('MarketplaceControllerMock.sol')
-const Presale = artifacts.require('PresaleMock.sol')
+const Hatch = artifacts.require('HatchMock.sol')
 
 
 const {
   ANY_ADDRESS,
   ZERO_ADDRESS,
-  PRESALE_MAX_GOAL,
-  PRESALE_MIN_GOAL,
-  PRESALE_PERIOD,
-  PRESALE_EXCHANGE_RATE,
+  HATCH_MAX_GOAL,
+  HATCH_MIN_GOAL,
+  HATCH_PERIOD,
+  HATCH_EXCHANGE_RATE,
   VESTING_CLIFF_PERIOD,
   VESTING_COMPLETE_PERIOD,
   PERCENT_SUPPLY_OFFERED,
@@ -109,37 +109,37 @@ const deploy = {
     await test.tokenManager.initialize(test.projectToken.address, true /* transferable */, 0 /* macAccountTokens (infinite if set to 0) */)
   },
 
-  /* PRESALE */
-  deployPresale: async (test, appManager) => {
-    const appBase = await Presale.new()
-    const receipt = await test.dao.newAppInstance(hash('presale.aragonpm.eth'), appBase.address, '0x', false, { from: appManager })
-    test.presale = await Presale.at(deploy.getProxyAddress(receipt))
-    test.PRESALE_OPEN_ROLE = await appBase.OPEN_ROLE()
-    test.PRESALE_CONTRIBUTE_ROLE = await appBase.CONTRIBUTE_ROLE()
+  /* HATCH */
+  deployHatch: async (test, appManager) => {
+    const appBase = await Hatch.new()
+    const receipt = await test.dao.newAppInstance(hash('hatch.aragonpm.eth'), appBase.address, '0x', false, { from: appManager })
+    test.hatch = await Hatch.at(deploy.getProxyAddress(receipt))
+    test.HATCH_OPEN_ROLE = await appBase.OPEN_ROLE()
+    test.HATCH_CONTRIBUTE_ROLE = await appBase.CONTRIBUTE_ROLE()
   },
-  setPresalePermissions: async (test, appManager) => {
-    await test.acl.createPermission(appManager, test.presale.address, test.PRESALE_OPEN_ROLE, appManager, { from: appManager })
-    await test.acl.createPermission(ANY_ADDRESS, test.presale.address, test.PRESALE_CONTRIBUTE_ROLE, appManager, { from: appManager })
+  setHatchPermissions: async (test, appManager) => {
+    await test.acl.createPermission(appManager, test.hatch.address, test.HATCH_OPEN_ROLE, appManager, { from: appManager })
+    await test.acl.createPermission(ANY_ADDRESS, test.hatch.address, test.HATCH_CONTRIBUTE_ROLE, appManager, { from: appManager })
   },
-  initializePresale: async (test, params) => {
+  initializeHatch: async (test, params) => {
     const paramsArr = [
       params.fundraising,
       params.tokenManager,
       params.reserve,
       params.beneficiary,
       params.contributionToken,
-      params.presaleMaxGoal,
-      params.presaleMinGoal,
-      params.presalePeriod,
-      params.presaleExchangeRate,
+      params.hatchMaxGoal,
+      params.hatchMinGoal,
+      params.hatchPeriod,
+      params.hatchExchangeRate,
       params.vestingCliffPeriod,
       params.vestingCompletePeriod,
       params.percentSupplyOffered,
       params.percentFundingForBeneficiary,
       params.startDate,
     ]
-    test.presale.mockSetTimestamp(now())
-    return test.presale.initialize(...paramsArr)
+    test.hatch.mockSetTimestamp(now())
+    return test.hatch.initialize(...paramsArr)
   },
   defaultDeployParams: (test, beneficiary) => {
     return {
@@ -148,11 +148,11 @@ const deploy = {
       tokenManager: test.tokenManager.address,
       vestingCliffPeriod: VESTING_CLIFF_PERIOD,
       vestingCompletePeriod: VESTING_COMPLETE_PERIOD,
-      presaleMaxGoal: PRESALE_MAX_GOAL,
-      presaleMinGoal: PRESALE_MIN_GOAL,
-      presaleExchangeRate: PRESALE_EXCHANGE_RATE,
+      hatchMaxGoal: HATCH_MAX_GOAL,
+      hatchMinGoal: HATCH_MIN_GOAL,
+      hatchExchangeRate: HATCH_EXCHANGE_RATE,
       percentSupplyOffered: PERCENT_SUPPLY_OFFERED,
-      presalePeriod: PRESALE_PERIOD,
+      hatchPeriod: HATCH_PERIOD,
       reserve: test.reserve.address,
       beneficiary,
       percentFundingForBeneficiary: PERCENT_FUNDING_FOR_BENEFICIARY,
@@ -179,12 +179,12 @@ const deploy = {
     await deploy.deployVault(test, appManager)
     await deploy.deployReserve(test, appManager)
     await deploy.deployFundraising(test, appManager)
-    await deploy.deployPresale(test, appManager)
+    await deploy.deployHatch(test, appManager)
 
     await deploy.setVaultPermissions(test, appManager)
     await deploy.setReservePermissions(test, appManager)
     await deploy.setFundraisingPermissions(test, appManager)
-    await deploy.setPresalePermissions(test, appManager)
+    await deploy.setHatchPermissions(test, appManager)
     await deploy.setTokenManagerPermissions(test, appManager)
 
     await deploy.initializeVault(test)
@@ -194,7 +194,7 @@ const deploy = {
   },
   deployDefaultSetup: async (test, appManager) => {
     await deploy.prepareDefaultSetup(test, appManager)
-    return await deploy.initializePresale(test, deploy.defaultDeployParams(test, appManager))
+    return await deploy.initializeHatch(test, deploy.defaultDeployParams(test, appManager))
   },
 }
 

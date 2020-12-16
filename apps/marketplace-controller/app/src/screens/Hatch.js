@@ -19,10 +19,10 @@ import {
 } from '@aragon/ui'
 import BigNumber from 'bignumber.js'
 import addMilliseconds from 'date-fns/addMilliseconds'
-import { PresaleViewContext } from '../context'
-import PresaleGoal from '../components/PresaleGoal'
+import { HatchViewContext } from '../context'
+import HatchGoal from '../components/HatchGoal'
 import Timeline from '../components/Timeline'
-import { Presale } from '../constants'
+import { Hatch } from '../constants'
 import { formatBigNumber } from '../utils/bn-utils'
 
 export default () => {
@@ -31,7 +31,7 @@ export default () => {
   // background script, layout, connected account and dropdown states
   // *****************************
   const {
-    presale: { period, vestingCliffPeriod, vestingCompletePeriod, contributionToken, token },
+    hatch: { period, vestingCliffPeriod, vestingCompletePeriod, contributionToken, token },
     contributions,
   } = useAppState()
   const { layoutName } = useLayout()
@@ -46,20 +46,20 @@ export default () => {
   // *****************************
   // context state
   // *****************************
-  const { openDate, state } = useContext(PresaleViewContext)
-  const presaleEnded = state !== Presale.state.PENDING && state !== Presale.state.FUNDING
-  const noOpenDate = state === Presale.state.PENDING && openDate === 0
+  const { openDate, state } = useContext(HatchViewContext)
+  const hatchEnded = state !== Hatch.state.PENDING && state !== Hatch.state.FUNDING
+  const noOpenDate = state === Hatch.state.PENDING && openDate === 0
   const endDate = addMilliseconds(openDate, period)
   const vestingCliffDate = addMilliseconds(openDate, vestingCliffPeriod)
   const vestingCompleteDate = addMilliseconds(openDate, vestingCompletePeriod)
 
   /**
-   * Calls the `presale.open` smart contarct function on button click
+   * Calls the `hatch.open` smart contarct function on button click
    * @returns {void}
    */
-  const handleOpenPresale = () => {
+  const handleOpenHatch = () => {
     api
-      .openPresale()
+      .openHatch()
       .toPromise()
       .catch(console.error)
   }
@@ -103,23 +103,23 @@ export default () => {
           invert={layoutName !== 'large' ? 'vertical' : 'horizontal'}
           secondary={
             <div>
-              <PresaleGoal />
+              <HatchGoal />
               <Box heading="Marketplace Period">
                 {noOpenDate && (
-                  <Button wide mode="strong" label="Open presale" onClick={handleOpenPresale}>
-                    Open presale
+                  <Button wide mode="strong" label="Open hatch" onClick={handleOpenHatch}>
+                    Open hatch
                   </Button>
                 )}
-                {presaleEnded && (
+                {hatchEnded && (
                   <p
                     css={`
                       font-size: 16px;
                     `}
                   >
-                    Presale closed
+                    Hatch closed
                   </p>
                 )}
-                {state === Presale.state.FUNDING && (
+                {state === Hatch.state.FUNDING && (
                   <p
                     css={`
                       font-size: 16px;
@@ -128,7 +128,7 @@ export default () => {
                     Time remaining
                   </p>
                 )}
-                {!noOpenDate && !presaleEnded && (
+                {!noOpenDate && !hatchEnded && (
                   <Countdown
                     css={`
                       margin-top: ${1 * GU}px;
@@ -178,10 +178,10 @@ export default () => {
               <Timeline
                 title="Marketplace Timeline"
                 steps={[
-                  ['Presale opens', openDate, 'Contributors can buy presale shares'],
-                  ['Presale ends', openDate === 0 ? 0 : endDate, 'Contributors can ask for refund if presale has failed'],
-                  ['Cliff period ends', openDate === 0 ? 0 : vestingCliffDate, 'Presale shares start vesting'],
-                  ['Vesting period ends', openDate === 0 ? 0 : vestingCompleteDate, 'Presale shares are totally vested'],
+                  ['Hatch opens', openDate, 'Contributors can buy hatch shares'],
+                  ['Hatch ends', openDate === 0 ? 0 : endDate, 'Contributors can ask for refund if hatch has failed'],
+                  ['Cliff period ends', openDate === 0 ? 0 : vestingCliffDate, 'Hatch shares start vesting'],
+                  ['Vesting period ends', openDate === 0 ? 0 : vestingCompleteDate, 'Hatch shares are totally vested'],
                 ]}
               />
               <DataView
