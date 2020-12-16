@@ -137,7 +137,7 @@ contract('Hatch, setup', ([anyone, appManager, someEOA]) => {
     })
 
     it('Reverts when setting an invalid beneficiary address', async () => {
-      initializeHatch(this, { ...defaultParams, beneficiary: ZERO_ADDRESS }), 'HATCH_INVALID_BENEFIC_ADDRESS'
+      await assertRevert(initializeHatch(this, { ...defaultParams, beneficiary: ZERO_ADDRESS }), 'HATCH_INVALID_BENEFICIARY')
     })
   })
 })
